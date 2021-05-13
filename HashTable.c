@@ -111,14 +111,97 @@ static uint64_t hashKey(const char * k){
 
 static const char * setEntryTable(entries * e, uint32_t m, const char* k, void* v, uint32_t * l){
 	uint64_t hash = hashKey(k);
-	uint32_t index = (uint32_t)(hash & (uint64_t) m);
-	
-	
-	
-	return NULL;
+	uint32_t index = (uint32_t)(hash & (uint64_t) (m - 1));
+
+	while(e[index].key != NULL){
+	    if(strcmp(k, e[index].key) == 0){
+	        e[index].item = v;
+	        return e[index].key;
+	    }
+
+	    index++;
+	    if(index >= m){
+	        index = 0;
+	    }
+	}
+
+	if(l != NULL){
+	    k = strdup(k);
+	    if(k == NULL){
+	        return NULL;
+	    }
+        (*l)++;
+	}
+
+	e[index].key = (char*) k;
+	e[index].item = v;
+	return k;
 }
 
+/**
+ *
+ * @param t
+ * @return
+ */
 int expandTab(Table *t) {
-	
-	return 0;
+    //TODO: maybe change this to actual boolean values
+	uint32_t newMaxCap = t->maxCap * 2;
+
+	if(newMaxCap < t->maxCap){
+	    return 0;
+	}
+    entries * newEntries = calloc(newMaxCap, sizeof(entries));
+
+	if(newEntries == NULL){
+	    return 0;
+	}
+
+    for (int i = 0; i < t->maxCap; i++) {
+        entries entryCopy = t->items[i];
+        if(entryCopy.key != NULL){
+            setEntryTable(newEntries, newMaxCap, entryCopy.key, entryCopy.item, NULL);
+        }
+    }
+    free(t->items);
+    t->items = newEntries;
+    t->maxCap = newMaxCap;
+	return 1;
+}
+
+/**
+ *
+ * @return
+ */
+static int tableLength(Table* t){
+    return t->currLen;
+}
+
+/**
+ *
+ * @return
+ */
+TableIter tableIterator(Table * t){
+    TableIter toRet;
+    toRet.table = t;
+    toRet.index = 0;
+    return toRet;
+}
+
+/**
+ *
+ * @return
+ */
+static int tableNextEntry(TableIter * ti){
+    Table * t = ti->table;
+    while (ti->index < t->currLen){
+        uint32_t i = ti->index;
+        ti->index++;
+        if (t->items[i].key != NULL){
+            entries entry = t->items[i];
+            ti->key = entry.key;
+            ti->item = entry.item;
+            return 1;
+        }
+    }
+    return 0;
 }

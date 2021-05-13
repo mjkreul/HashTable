@@ -63,7 +63,7 @@ typedef struct TableIter_t{
 	/**
 	 *
 	 */
-	unsigned int size;
+	uint32_t index;
 }TableIter;
 
 /**
@@ -89,19 +89,37 @@ void * getItem(Table *, const char *);
  */
 const char * setItem(Table *, const char *, void * );
 
+
+
+/**
+ *
+ */
+static uint64_t hashKey(const char *);
+
+/**
+ *
+ */
+static const char * setEntryTable(entries * , uint32_t , const char* , void* , uint32_t * );
+
 /**
  *
  * @return
  */
-TableIter * tableIterator(Table *);
-
-
-static uint64_t hashKey(const char *);
-
-static const char * setEntryTable(entries * , uint32_t , const char* , void* , uint32_t * );
-
 static int expandTab(Table* );
 
+/**
+ *
+ * @return
+ */
+static int tableLength(Table* );
+
+/**
+ *
+ * @return
+ */
+TableIter tableIterator(Table * );
+
+static int tableNextEntry(TableIter *);
 
 
 #endif //HASHTABLE_HASHTABLE_H
